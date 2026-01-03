@@ -17,8 +17,8 @@ on:
         default: 'false'
       force:
         description: 'Force translation (ignore Chinese detection)'
-        required: false
-        default: 'false'
+        required: true
+        default: 'true'
 
 jobs:
   translate:
