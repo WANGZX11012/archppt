@@ -9,10 +9,10 @@ try:
     import deepl
     from pptx import Presentation
     from pptx.enum.shapes import MSO_SHAPE_TYPE
-    from langdetect import detect
+    from langdetect import detect, LangDetectException
     from PIL import Image
     import pytesseract
-except Exception as e:
+except (ImportError, ModuleNotFoundError) as e:
     print(f"[ERROR] Missing dependencies: {e}")
     sys.exit(1)
 
@@ -38,7 +38,7 @@ def translate_text(translator: deepl.Translator, text: str) -> str:
             lang = detect(text)
             if lang.lower().startswith("zh"):
                 return text
-        except Exception:
+        except LangDetectException:
             # If detection fails, attempt translation anyway
             pass
         result = translator.translate_text(text, target_lang="ZH")
