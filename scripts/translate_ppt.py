@@ -40,8 +40,8 @@ def ensure_argos_model(from_code: str, to_code: str = "zh") -> bool:
         argos_package.update_package_index()
         installed = []
         for lang in argos_translate.get_installed_languages():
-            for to_lang in lang.translations_from(lang):
-                installed.append((lang.code, to_lang.code))
+            for trans in lang.translations_from(lang):
+                installed.append((lang.code, trans.code))
         if (from_code, to_code) in installed:
             return True
         available = argos_package.get_available_packages()
@@ -49,7 +49,8 @@ def ensure_argos_model(from_code: str, to_code: str = "zh") -> bool:
         if not candidates:
             return False
         pkg = candidates[0]
-        path = argos_package.download_and_install_package(pkg)
+        argos_package.download_and_install_package(pkg)
+        print(f"[INFO] Installed Argos model: {from_code}→{to_code}")
         return True
     except Exception as e:
         print(f"[WARN] Argos model install failed: {e}")
