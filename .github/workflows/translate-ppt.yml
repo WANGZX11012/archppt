@@ -1,0 +1,57 @@
+name: Translate PPT to zh-CN
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_path:
+        description: 'Source PPTX path'
+        required: true
+        default: '01计算机设计导论.pptx'
+      output_path:
+        description: 'Output PPTX path'
+        required: true
+        default: '01计算机设计导论_zh-CN.pptx'
+      enable_ocr:
+        description: 'Enable OCR for images'
+        required: false
+        default: 'false'
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install python-pptx deepl langdetect pillow pytesseract
+
+      - name: Install Tesseract (if OCR enabled)
+        if: ${{ inputs.enable_ocr == 'true' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr
+
+      - name: Run translation
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: |
+          python scripts/translate_ppt.py --source "${{ inputs.source_path }}" --output "${{ inputs.output_path }}" ${{ inputs.enable_ocr == 'true' && '--enable-ocr' || '' }}
+
+      - name: Commit and push output
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add "${{ inputs.output_path }}"
+          git commit -m "Add Chinese translation for ${{ inputs.source_path }} -> ${{ inputs.output_path }}"
+          git push origin "${{ github.ref_name }}"
